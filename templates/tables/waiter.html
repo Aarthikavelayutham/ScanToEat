@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waiter Panel — ScanToEat</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; }
+
+        .header {
+            background: #ff6b35;
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 { font-size: 22px; }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 16px;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        .nav-links a:hover { opacity: 1; }
+
+        .dashboard {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 24px 16px;
+        }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .tables-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        .table-header {
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff8f5;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .table-number {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ff6b35;
+        }
+
+        .table-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-free {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-active {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .status-ready {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .table-body { padding: 14px 16px; }
+
+        .order-block {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .order-block:last-child { border-bottom: none; }
+
+        .order-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .order-id {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .order-status-pill {
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .pill-pending { background: #fdecea; color: #c62828; }
+        .pill-preparing { background: #fff8e1; color: #f57f17; }
+        .pill-ready { background: #e8f5e9; color: #2e7d32; }
+
+        .order-items-list {
+            list-style: none;
+        }
+
+        .order-items-list li {
+            font-size: 13px;
+            color: #555;
+            padding: 2px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .table-footer {
+            padding: 12px 16px;
+            background: #fafafa;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-total {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .bill-btn {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .bill-btn:hover { background: #e55a25; }
+
+        .bill-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .free-msg {
+            text-align: center;
+            padding: 20px;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .qr-link {
+            display: block;
+            text-align: center;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #ff6b35;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Waiter Panel</h1>
+    <div class="nav-links">
+        <a href="/kitchen/">Kitchen</a>
+        <a href="/analytics/">Analytics</a>
+        <a href="/admin/">Admin</a>
+    </div>
+</div>
+
+<div class="dashboard">
+    <p class="page-title">Active Tables</p>
+
+    <div class="tables-grid">
+        {% for data in table_data %}
+        <div class="table-card" id="table-{{ data.table.id }}">
+
+            <div class="table-header">
+                <span class="table-number">Table {{ data.table.number }}</span>
+                {% if data.orders %}
+                    {% if data.has_ready %}
+                        <span class="table-status status-ready">Ready to Serve</span>
+                    {% else %}
+                        <span class="table-status status-active">Active</span>
+                    {% endif %}
+                {% else %}
+                    <span class="table-status status-free">Free</span>
+                {% endif %}
+            </div>
+
+            <div class="table-body">
+                {% if data.orders %}
+                    {% for order in data.orders %}
+                    <div class="order-block">
+                        <div class="order-meta">
+                            <span class="order-id">{{ order.created_at|timesince }} ago</span>
+                            <span class="order-status-pill pill-{{ order.status }}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </div>
+                        <ul class="order-items-list">
+                            {% for item in order.items.all %}
+                            <li>
+                                <span>{{ item.menu_item.name }}</span>
+                                <span>x{{ item.quantity }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="free-msg">No active orders</div>
+                {% endif %}
+            </div>
+
+            <div class="table-footer">
+                <span class="table-total">
+                    {% if data.total_amount %}
+                        ₹{{ data.total_amount|floatformat:2 }}
+                    {% else %}
+                        ₹0.00
+                    {% endif %}
+                </span>
+                {% if data.orders %}
+                <button class="bill-btn"
+                    onclick="billTable('{{ data.table.id }}', this)">
+                    Generate Bill
+                </button>
+                {% else %}
+                <button class="bill-btn" disabled>Generate Bill</button>
+                {% endif %}
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function billTable(tableId, btn) {
+    if (!confirm('Generate bill for this table?')) return;
+    fetch(`/tables/bill/${tableId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        document.cookie.split(';').forEach(cookie => {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            }
+        });
+    }
+    return cookieValue;
+}
+
+// Auto refresh every 10 seconds
+setInterval(() => location.reload(), 10000);
+</script>
+
+</body>
+</html>
+

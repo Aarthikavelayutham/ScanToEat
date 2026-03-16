@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Placed — ScanToEat{% endblock %}
+
+{% block content %}
+
+<div class="success-box">
+    <div class="success-icon">✓</div>
+    <h2>Order Placed!</h2>
+    <p>Your order has been sent to the kitchen.</p>
+    <a href="{% url 'menu' %}" class="back-btn">Order More</a>
+</div>
+
+{% endblock %}

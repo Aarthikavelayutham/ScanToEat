@@ -1,0 +1,45 @@
+{% if orders %}
+<div class="orders-grid">
+    {% for order in orders %}
+    <div class="order-card {{ order.status }}">
+        <div class="order-header">
+            <span class="order-table">Table {{ order.table.number }}</span>
+            <span class="order-time">{{ order.created_at|timesince }} ago</span>
+        </div>
+
+        <span class="status-badge status-{{ order.status }}">
+            {{ order.get_status_display }}
+        </span>
+
+        <ul class="order-items">
+            {% for item in order.items.all %}
+            <li>
+                <span>{{ item.menu_item.name }}</span>
+                <span class="item-qty">x{{ item.quantity }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <div class="action-btns">
+            {% if order.status == 'pending' %}
+                <button class="btn btn-prepare"
+                    onclick="updateStatus('{{ order.id }}', 'preparing')">
+                    Start Preparing
+                </button>
+            {% endif %}
+            {% if order.status == 'preparing' %}
+                <button class="btn btn-ready"
+                    onclick="updateStatus('{{ order.id }}', 'ready')">
+                    Mark Ready
+                </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="no-orders">
+    No active orders right now.
+</div>
+{% endif %}
+

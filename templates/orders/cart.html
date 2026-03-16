@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Cart — ScanToEat{% endblock %}
+
+{% block content %}
+
+<h2 class="page-title">Your Cart</h2>
+
+{% if table_number %}
+    <div class="table-banner">
+        Ordering for <strong>Table {{ table_number }}</strong>
+    </div>
+{% endif %}
+
+{% if cart_items %}
+    <div class="cart-list">
+        {% for item in cart_items %}
+        <div class="cart-item">
+            <div class="cart-item-info">
+                <span class="cart-item-name">{{ item.name }}</span>
+                <span class="cart-item-qty">x{{ item.quantity }}</span>
+            </div>
+            <div class="cart-item-right">
+                <span class="cart-item-price">₹{{ item.subtotal }}</span>
+                <form method="post" action="{% url 'remove_from_cart' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                    <button type="submit" class="remove-btn">Remove</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="cart-total">
+        <span>Total</span>
+        <span class="total-amount">₹{{ total }}</span>
+    </div>
+
+    <form method="post" action="{% url 'place_order' %}">
+        {% csrf_token %}
+        <button type="submit" class="place-order-btn">Place Order</button>
+    </form>
+
+{% else %}
+    <div class="empty-cart">
+        <p>Your cart is empty.</p>
+        <a href="{% url 'menu' %}" class="back-btn">Back to Menu</a>
+    </div>
+{% endif %}
+
+{% endblock %}

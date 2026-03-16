@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Menu — ScanToEat{% endblock %}
+
+{% block content %}
+
+{% if table %}
+    <div class="table-banner">
+        You are ordering for <strong>Table {{ table.number }}</strong>
+    </div>
+{% else %}
+    <div class="table-banner warning">
+        No table selected. Please scan your table QR code.
+    </div>
+{% endif %}
+
+<div class="category-nav">
+    {% for category in categories %}
+        <a href="#cat-{{ category.slug }}" class="cat-link">
+            {{ category.name }}
+        </a>
+    {% endfor %}
+</div>
+
+{% for category in categories %}
+<section class="category-section" id="cat-{{ category.slug }}">
+    <h2 class="category-title">{{ category.name }}</h2>
+    <div class="items-grid">
+        {% for item in category.items.all %}
+            {% if item.is_available %}
+            <div class="item-card">
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}" class="item-image">
+                {% else %}
+                    <div class="item-image-placeholder"></div>
+                {% endif %}
+                <div class="item-info">
+                    <h3 class="item-name">{{ item.name }}</h3>
+                    <p class="item-desc">{{ item.description }}</p>
+                    <div class="item-footer">
+                        <span class="item-price">₹{{ item.price }}</span>
+                        {% if table %}
+                        <button class="add-btn" onclick="addToCart('{{ item.id }}', this)">Add</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="item-card out-of-stock">
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}" class="item-image">
+                {% else %}
+                    <div class="item-image-placeholder"></div>
+                {% endif %}
+                <div class="item-info">
+                    <h3 class="item-name">{{ item.name }}</h3>
+                    <p class="item-desc">{{ item.description }}</p>
+                    <div class="item-footer">
+                        <span class="item-price">₹{{ item.price }}</span>
+                        <span class="out-badge">Out of Stock</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</section>
+{% endfor %}
+
+{% endblock %}

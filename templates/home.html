@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScanToEat</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .home-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .home-logo {
+            font-size: 36px;
+            font-weight: 800;
+            color: #ff6b35;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+
+        .home-tagline {
+            font-size: 15px;
+            color: #888;
+            margin-bottom: 40px;
+        }
+
+        .panels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .panel-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            text-decoration: none;
+            color: #222;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-top: 4px solid #ff6b35;
+        }
+
+        .panel-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        .panel-card.green { border-top-color: #2ecc71; }
+        .panel-card.blue { border-top-color: #3498db; }
+        .panel-card.purple { border-top-color: #9b59b6; }
+        .panel-card.teal { border-top-color: #1abc9c; }
+
+        .panel-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .panel-title {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .panel-desc {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.5;
+        }
+
+        .customer-section {
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 30px;
+            background: #fff8f5;
+            border-radius: 16px;
+            padding: 20px 24px;
+            border: 2px dashed #ff6b35;
+        }
+
+        .customer-section h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ff6b35;
+            margin-bottom: 8px;
+        }
+
+        .customer-section p {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 12px;
+        }
+
+        .menu-link {
+            display: inline-block;
+            background: #ff6b35;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .staff-label {
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+<div class="home-wrapper">
+
+    <div class="home-logo">ScanToEat</div>
+    <p class="home-tagline">QR-Based Digital Menu & Order Management</p>
+
+    <!-- Customer section -->
+    <div class="customer-section">
+        <h2>For Customers</h2>
+        <p>Scan the QR code on your table to view the menu and place orders directly.</p>
+        <a href="{% url 'menu' %}" class="menu-link">View Menu</a>
+    </div>
+
+    <!-- Staff panels -->
+    <p class="staff-label">Staff Panels</p>
+    <div class="panels-grid">
+
+        <a href="{% url 'kitchen' %}" class="panel-card green">
+            <div class="panel-icon">👨‍🍳</div>
+            <div class="panel-title">Kitchen Dashboard</div>
+            <div class="panel-desc">View live incoming orders, mark as preparing or ready.</div>
+        </a>
+
+        <a href="{% url 'waiter' %}" class="panel-card blue">
+            <div class="panel-icon">🍽️</div>
+            <div class="panel-title">Waiter Panel</div>
+            <div class="panel-desc">See active tables, order status and generate bills.</div>
+        </a>
+
+        <a href="{% url 'analytics' %}" class="panel-card purple">
+            <div class="panel-icon">📊</div>
+            <div class="panel-title">Analytics</div>
+            <div class="panel-desc">Top ordered items, revenue and peak dining hours.</div>
+        </a>
+
+        <a href="/admin/" class="panel-card">
+            <div class="panel-icon">⚙️</div>
+            <div class="panel-title">Admin Panel</div>
+            <div class="panel-desc">Manage menu items, categories, prices and tables.</div>
+        </a>
+
+        <a href="{% url 'qr_codes' %}" class="panel-card teal">
+            <div class="panel-icon">📱</div>
+            <div class="panel-title">Table QR Codes</div>
+            <div class="panel-desc">View download and print QR codes for all tables.</div>
+        </a>
+
+    </div>
+
+</div>
+</body>
+</html>
