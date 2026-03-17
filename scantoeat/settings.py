@@ -6,14 +6,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-#@jr1e7-vs-*kqnqa^t&khep)nldh6jfg2!wb2%(@1du)i1%1h')
 
-# Deployment-agnostic Security & Host Settings
-DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
+# Force DEBUG on to see the exact error for troubleshooting
+DEBUG = True
+ALLOWED_HOSTS = ['*']
 
-# Allowed Hosts: Localhost + common cloud subdomains for zero-config deployment
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '.up.railway.app', '.onrender.com', '.herokuapp.com', '.vercel.app']
-PUBLIC_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN') or os.environ.get('RENDER_EXTERNAL_HOSTNAME') or os.environ.get('PUBLIC_DOMAIN')
-if PUBLIC_DOMAIN:
-    ALLOWED_HOSTS.append(PUBLIC_DOMAIN)
+# Domain detection for CSRF and SITE_URL
+PUBLIC_DOMAIN = os.environ.get('RENDER_EXTERNAL_HOSTNAME') or os.environ.get('RAILWAY_PUBLIC_DOMAIN') or os.environ.get('PUBLIC_DOMAIN')
 
 # Site URL for QR codes: prioritizes environment, then detected domain, then localhost
 SITE_URL = os.environ.get('SITE_URL')
