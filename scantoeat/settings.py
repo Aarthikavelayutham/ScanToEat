@@ -93,8 +93,6 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = True
 
-]
-
 # Redirects
 LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = '/admin/'
