@@ -14,7 +14,7 @@ class Table(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.qr_image:
-            url = f"http://192.168.56.217:8000/menu/?table={self.qr_token}"
+            url = f"http://192.168.56.118:8000/menu/?table={self.qr_token}"
             qr = qrcode.make(url)
             buffer = BytesIO()
             qr.save(buffer, format='PNG')
