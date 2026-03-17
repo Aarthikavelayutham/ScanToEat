@@ -1,13 +1,11 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
-from django.conf.urls.static import static
 from django.shortcuts import render
-
+from django.views.static import serve
 
 def home(request):
     return render(request, 'home.html')
-
 
 urlpatterns = [
     path('', home, name='home'),
@@ -17,4 +15,6 @@ urlpatterns = [
     path('kitchen/', include('kitchen.urls')),
     path('analytics/', include('analytics.urls')),
     path('tables/', include('tables.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # Force serve media files in production
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+]
