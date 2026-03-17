@@ -12,6 +12,11 @@ python manage.py collectstatic --no-input --clear
 # Database migrations
 python manage.py migrate
 
+# Import your 100+ dishes automatically
+echo "==> Restoring your 100+ dishes..."
+python manage.py loaddata menu_data.json
+python manage.py loaddata tables_data.json
+
 # Master User Setup (detected from environment or defaults)
 python manage.py shell -c "
 import os
