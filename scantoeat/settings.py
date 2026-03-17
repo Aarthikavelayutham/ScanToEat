@@ -7,8 +7,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-#@jr1e7-vs-*kqnqa^t&khep)nldh6jfg2!wb2%(@1du)i1%1h')
 
 # Force DEBUG on to see the exact error for troubleshooting
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+# Security: Environment-based detection
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+
+# Allowed Hosts: Localhost + common cloud subdomains
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '.up.railway.app', '.onrender.com', '.herokuapp.com', '.vercel.app']
 
 # Domain detection for CSRF and SITE_URL
 PUBLIC_DOMAIN = os.environ.get('RENDER_EXTERNAL_HOSTNAME') or os.environ.get('RAILWAY_PUBLIC_DOMAIN') or os.environ.get('PUBLIC_DOMAIN')
