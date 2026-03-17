@@ -2,7 +2,8 @@
 set -o errexit
 pip install -r requirements.txt
 mkdir -p staticfiles
-python manage.py collectstatic --no-input
+mkdir -p staticfiles/admin
+python manage.py collectstatic --no-input --clear
 python manage.py migrate
 python manage.py shell -c "
 from django.contrib.auth.models import User

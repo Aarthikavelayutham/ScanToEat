@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-#@jr1e7-vs-*kqnqa^t&khep)nldh6jfg2!wb2%(@1du)i1%1h')
 
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -77,9 +77,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-
-MEDIA_URL = '/media/'
+STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
