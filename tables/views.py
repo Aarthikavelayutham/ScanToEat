@@ -5,7 +5,6 @@ from django.db.models import Prefetch
 from .models import Table
 from orders.models import Order
 
-@staff_member_required
 def waiter_dashboard(request):
     active_orders_qs = Order.objects.filter(
         status__in=['pending', 'preparing', 'ready']
@@ -35,7 +34,6 @@ def waiter_dashboard(request):
     })
 
 
-@staff_member_required
 def bill_table(request, table_id):
     if request.method == 'POST':
         table = get_object_or_404(Table, id=table_id)
@@ -48,7 +46,6 @@ def bill_table(request, table_id):
     return JsonResponse({'success': False})
 
 
-@staff_member_required
 def qr_codes_page(request):
     tables = Table.objects.filter(is_active=True).order_by('number')
     return render(request, 'tables/qr_codes.html', {
@@ -56,7 +53,6 @@ def qr_codes_page(request):
     })
 
 
-@staff_member_required
 def waiter_fragment(request):
     active_orders_qs = Order.objects.filter(
         status__in=['pending', 'preparing', 'ready']

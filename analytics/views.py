@@ -4,7 +4,6 @@ from django.db.models import Sum, Count
 from django.db.models.functions import TruncHour
 from orders.models import Order, OrderItem
 
-@staff_member_required
 def analytics_dashboard(request):
     # Most ordered items
     top_items = OrderItem.objects.values(

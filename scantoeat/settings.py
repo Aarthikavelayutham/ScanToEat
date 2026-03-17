@@ -93,12 +93,11 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = True
 
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
+
+# Redirects
+LOGIN_URL = '/admin/login/'
+LOGIN_REDIRECT_URL = '/admin/'
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
