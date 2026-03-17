@@ -8,6 +8,30 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </head>
+<body>
+
+    <header class="header">
+        <div class="header-inner">
+            <h1 class="logo">ScanToEat</h1>
+            {% if request.session.table_number %}
+                <span class="table-badge">Table {{ request.session.table_number }}</span>
+            {% endif %}
+            <a href="{% url 'cart' %}" class="cart-btn">
+                Cart
+                {% if request.session.cart %}
+                    <span class="cart-count">
+                        {{ request.session.cart_total_qty|default:0 }}
+                    </span>
+                {% endif %}
+            </a>
+        </div>
+    </header>
+
+    <main class="main">
+        {% block content %}
+        {% endblock %}
+    </main>
+
 <script>
 function addToCart(itemId, btn) {
     fetch("{% url 'add_to_cart' %}", {
@@ -38,32 +62,17 @@ function addToCart(itemId, btn) {
                 cartBtn.appendChild(span);
             }
         }
+    })
+    .catch(err => {
+        btn.textContent = 'Error';
+        btn.style.background = '#c62828';
+        setTimeout(() => {
+            btn.textContent = 'Add';
+            btn.style.background = '#ff6b35';
+        }, 1500);
     });
 }
 </script>
-<body>
-
-    <header class="header">
-        <div class="header-inner">
-            <h1 class="logo">ScanToEat</h1>
-            {% if request.session.table_number %}
-                <span class="table-badge">Table {{ request.session.table_number }}</span>
-            {% endif %}
-            <a href="{% url 'cart' %}" class="cart-btn">
-                Cart
-                {% if request.session.cart %}
-                    <span class="cart-count">
-                        {{ request.session.cart|length }}
-                    </span>
-                {% endif %}
-            </a>
-        </div>
-    </header>
-
-    <main class="main">
-        {% block content %}
-        {% endblock %}
-    </main>
 
 </body>
 </html>

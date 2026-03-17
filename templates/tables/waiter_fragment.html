@@ -1,0 +1,67 @@
+{% if table_data %}
+<div class="tables-grid">
+    {% for data in table_data %}
+    <div class="table-card" id="table-{{ data.table.id }}">
+
+        <div class="table-header">
+            <span class="table-number">Table {{ data.table.number }}</span>
+            {% if data.orders %}
+                {% if data.has_ready %}
+                    <span class="table-status status-ready">Ready to Serve</span>
+                {% else %}
+                    <span class="table-status status-active">Active</span>
+                {% endif %}
+            {% else %}
+                <span class="table-status status-free">Free</span>
+            {% endif %}
+        </div>
+
+        <div class="table-body">
+            {% if data.orders %}
+                {% for order in data.orders %}
+                <div class="order-block">
+                    <div class="order-meta">
+                        <span class="order-id">{{ order.created_at|timesince }} ago</span>
+                        <span class="order-status-pill pill-{{ order.status }}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+                    <ul class="order-items-list">
+                        {% for item in order.items.all %}
+                        <li>
+                            <span>{{ item.menu_item.name }}</span>
+                            <span>x{{ item.quantity }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="free-msg">No active orders</div>
+            {% endif %}
+        </div>
+
+        <div class="table-footer">
+            <span class="table-total">
+                {% if data.total_amount %}
+                    ₹{{ data.total_amount|floatformat:2 }}
+                {% else %}
+                    ₹0.00
+                {% endif %}
+            </span>
+            {% if data.orders %}
+            <button class="bill-btn"
+                onclick="billTable('{{ data.table.id }}', this)">
+                Generate Bill
+            </button>
+            {% else %}
+            <button class="bill-btn" disabled>Generate Bill</button>
+            {% endif %}
+        </div>
+
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p>No tables configured.</p>
+{% endif %}

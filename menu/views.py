@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404
+from django.db.models import Prefetch
 from .models import Category, MenuItem
 from tables.models import Table
 
@@ -16,7 +17,9 @@ def menu_view(request):
 
     categories = Category.objects.filter(
         is_active=True
-    ).prefetch_related('items')
+    ).prefetch_related(
+        Prefetch('items', queryset=MenuItem.objects.filter(is_available=True))
+    )
 
     return render(request, 'menu/menu.html', {
         'categories': categories,

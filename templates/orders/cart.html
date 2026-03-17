@@ -34,7 +34,7 @@
 
     <div class="cart-total">
         <span>Total</span>
-        <span class="total-amount">₹{{ total }}</span>
+        <span class="total-amount">₹{{ total|floatformat:2 }}</span>
     </div>
 
     <form method="post" action="{% url 'place_order' %}">

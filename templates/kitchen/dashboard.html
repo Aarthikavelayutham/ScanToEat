@@ -152,6 +152,8 @@
     </div>
 </div>
 
+{% load static %}
+<script src="{% static 'js/utils.js' %}"></script>
 <script>
 function updateStatus(orderId, status) {
     fetch(`/kitchen/update/${orderId}/`, {
@@ -166,7 +168,13 @@ function updateStatus(orderId, status) {
     .then(data => {
         if (data.success) {
             refreshOrders();
+        } else {
+            alert(data.error || 'Failed to update status');
         }
+    })
+    .catch(err => {
+        console.error('Status update failed:', err);
+        alert('Network error — please try again');
     });
 }
 
@@ -175,20 +183,10 @@ function refreshOrders() {
         .then(res => res.text())
         .then(html => {
             document.getElementById('orders-container').innerHTML = html;
+        })
+        .catch(err => {
+            console.error('Refresh failed:', err);
         });
-}
-
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        document.cookie.split(';').forEach(cookie => {
-            cookie = cookie.trim();
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            }
-        });
-    }
-    return cookieValue;
 }
 
 // Auto refresh every 5 seconds

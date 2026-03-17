@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 import uuid
 import qrcode
 from io import BytesIO
@@ -14,7 +15,7 @@ class Table(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.qr_image:
-            url = f"https://scantoeat-1.onrender.com/menu/?table={self.qr_token}"
+            url = f"{settings.SITE_URL}/menu/?table={self.qr_token}"
             qr = qrcode.make(url)
             buffer = BytesIO()
             qr.save(buffer, format='PNG')

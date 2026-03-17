@@ -191,83 +191,27 @@
 <div class="header">
     <h1>Waiter Panel</h1>
     <div class="nav-links">
-        <a href="/kitchen/">Kitchen</a>
-        <a href="/analytics/">Analytics</a>
-        <a href="/admin/">Admin</a>
+        <a href="{% url 'kitchen' %}">Kitchen</a>
+        <a href="{% url 'analytics' %}">Analytics</a>
+        <a href="{% url 'admin:index' %}">Admin</a>
     </div>
 </div>
 
 <div class="dashboard">
     <p class="page-title">Active Tables</p>
 
-    <div class="tables-grid">
-        {% for data in table_data %}
-        <div class="table-card" id="table-{{ data.table.id }}">
-
-            <div class="table-header">
-                <span class="table-number">Table {{ data.table.number }}</span>
-                {% if data.orders %}
-                    {% if data.has_ready %}
-                        <span class="table-status status-ready">Ready to Serve</span>
-                    {% else %}
-                        <span class="table-status status-active">Active</span>
-                    {% endif %}
-                {% else %}
-                    <span class="table-status status-free">Free</span>
-                {% endif %}
-            </div>
-
-            <div class="table-body">
-                {% if data.orders %}
-                    {% for order in data.orders %}
-                    <div class="order-block">
-                        <div class="order-meta">
-                            <span class="order-id">{{ order.created_at|timesince }} ago</span>
-                            <span class="order-status-pill pill-{{ order.status }}">
-                                {{ order.get_status_display }}
-                            </span>
-                        </div>
-                        <ul class="order-items-list">
-                            {% for item in order.items.all %}
-                            <li>
-                                <span>{{ item.menu_item.name }}</span>
-                                <span>x{{ item.quantity }}</span>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="free-msg">No active orders</div>
-                {% endif %}
-            </div>
-
-            <div class="table-footer">
-                <span class="table-total">
-                    {% if data.total_amount %}
-                        ₹{{ data.total_amount|floatformat:2 }}
-                    {% else %}
-                        ₹0.00
-                    {% endif %}
-                </span>
-                {% if data.orders %}
-                <button class="bill-btn"
-                    onclick="billTable('{{ data.table.id }}', this)">
-                    Generate Bill
-                </button>
-                {% else %}
-                <button class="bill-btn" disabled>Generate Bill</button>
-                {% endif %}
-            </div>
-
-        </div>
-        {% endfor %}
+    <div id="waiter-container">
+        {% include 'tables/waiter_fragment.html' %}
     </div>
 </div>
 
+{% load static %}
+<script src="{% static 'js/utils.js' %}"></script>
 <script>
 function billTable(tableId, btn) {
     if (!confirm('Generate bill for this table?')) return;
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
     fetch(`/tables/bill/${tableId}/`, {
         method: 'POST',
         headers: {
@@ -278,28 +222,33 @@ function billTable(tableId, btn) {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            location.reload();
+            refreshWaiter();
+        } else {
+            btn.disabled = false;
+            btn.textContent = 'Generate Bill';
+            alert('Failed to generate bill');
         }
+    })
+    .catch(err => {
+        console.error('Bill request failed:', err);
+        btn.disabled = false;
+        btn.textContent = 'Generate Bill';
+        alert('Network error — please try again');
     });
 }
 
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        document.cookie.split(';').forEach(cookie => {
-            cookie = cookie.trim();
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            }
-        });
-    }
-    return cookieValue;
+function refreshWaiter() {
+    fetch('{% url "waiter_fragment" %}')
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('waiter-container').innerHTML = html;
+        })
+        .catch(err => console.error('Refresh failed:', err));
 }
 
 // Auto refresh every 10 seconds
-setInterval(() => location.reload(), 10000);
+setInterval(refreshWaiter, 10000);
 </script>
 
 </body>
 </html>
-
