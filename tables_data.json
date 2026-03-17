@@ -1,11 +1,33 @@
 [
 {
   "model": "tables.table",
+  "pk": "c3e3abd1-291a-4fcb-8163-dee387315915",
+  "fields": {
+    "number": 1,
+    "qr_token": "0bb5dd13-c3ba-44a7-aa09-31333fdb226a",
+    "qr_image": "qrcodes/table_1_AmVrPSH.png",
+    "capacity": 2,
+    "is_active": true
+  }
+},
+{
+  "model": "tables.table",
   "pk": "1e0b6576-a614-4091-b9f6-a1d051c3ad55",
   "fields": {
     "number": 2,
     "qr_token": "07093bfd-ad4d-42c9-8c06-c67e5a7f9adb",
     "qr_image": "qrcodes/table_2_tEMx5gs.png",
+    "capacity": 4,
+    "is_active": true
+  }
+},
+{
+  "model": "tables.table",
+  "pk": "7f0a4fa2-1040-4d11-bcc7-c1374d07d1f3",
+  "fields": {
+    "number": 3,
+    "qr_token": "61a25638-c683-419f-8abb-206803ebff4a",
+    "qr_image": "qrcodes/table_3_DTIA6QI.png",
     "capacity": 4,
     "is_active": true
   }
@@ -34,23 +56,12 @@
 },
 {
   "model": "tables.table",
-  "pk": "632543de-595e-429b-ad5b-b8bba7a5ada1",
+  "pk": "dbd77f89-271e-4605-8503-a987302c82ce",
   "fields": {
-    "number": 8,
-    "qr_token": "04e830a4-6c7f-4f87-ba6e-af0b410cda94",
-    "qr_image": "qrcodes/table_8_D8I8hec.png",
-    "capacity": 4,
-    "is_active": true
-  }
-},
-{
-  "model": "tables.table",
-  "pk": "7f0a4fa2-1040-4d11-bcc7-c1374d07d1f3",
-  "fields": {
-    "number": 3,
-    "qr_token": "61a25638-c683-419f-8abb-206803ebff4a",
-    "qr_image": "qrcodes/table_3_DTIA6QI.png",
-    "capacity": 4,
+    "number": 6,
+    "qr_token": "2c4a25a0-6353-489f-a59c-6aa609d745ef",
+    "qr_image": "qrcodes/table_6_zAzwclK.png",
+    "capacity": 8,
     "is_active": true
   }
 },
@@ -67,23 +78,12 @@
 },
 {
   "model": "tables.table",
-  "pk": "c3e3abd1-291a-4fcb-8163-dee387315915",
+  "pk": "632543de-595e-429b-ad5b-b8bba7a5ada1",
   "fields": {
-    "number": 1,
-    "qr_token": "0bb5dd13-c3ba-44a7-aa09-31333fdb226a",
-    "qr_image": "qrcodes/table_1_AmVrPSH.png",
-    "capacity": 2,
-    "is_active": true
-  }
-},
-{
-  "model": "tables.table",
-  "pk": "dbd77f89-271e-4605-8503-a987302c82ce",
-  "fields": {
-    "number": 6,
-    "qr_token": "2c4a25a0-6353-489f-a59c-6aa609d745ef",
-    "qr_image": "qrcodes/table_6_zAzwclK.png",
-    "capacity": 8,
+    "number": 8,
+    "qr_token": "04e830a4-6c7f-4f87-ba6e-af0b410cda94",
+    "qr_image": "qrcodes/table_8_D8I8hec.png",
+    "capacity": 4,
     "is_active": true
   }
 }
