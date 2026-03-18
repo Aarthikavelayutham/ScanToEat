@@ -44,17 +44,18 @@ def ai_recommendations(request):
     mood_map = {
         'spicy': ['spicy', 'chili', 'hot', 'masala', 'kick', 'fire', 'pepper'],
         'healthy': ['healthy', 'diet', 'green', 'fresh', 'oil-free', 'boiled', 'protein', 'salad'],
-        'kids': ['kids', 'child', 'sweet', 'soft', 'non-spicy', 'plain', 'mini', 'small'],
+        'kids': ['kids', 'child', 'sweet', 'soft', 'non-spicy', 'plain', 'mini', 'small', 'gentle'],
         'chef': ['best', 'signature', 'special', 'must-try', 'chef', 'recommend', 'famous'],
         'drinks': ['drink', 'cold', 'beverage', 'juice', 'soda', 'refreshing']
     }
     
     current_intent = next((m for m, keywords in mood_map.items() if any(kw in message for kw in keywords)), None)
     
-    # Reasoning logic for "Chat-GPT" feel
+    # Response logic
+    items = MenuItem.objects.none() # Default to empty queryset
+    
     if 'hi' in message or 'hello' in message or 'chef' in message:
-        reply = "Hello! I'm Chef ScanToEat. 👨‍Chef at your service. I can help you find anything from a light snack to a grand feast! What's your appetite like today?"
-        items = []
+        reply = "Hello! I'm Chef ScanToEat. 👨‍🍳 Chef at your service. I can help you find anything from a light snack to a grand feast! What's your appetite like today?"
     elif detected_cat:
         reply = f"Ah, looking for {detected_cat.name}? Great choice! I've curated our entire selection of {detected_cat.name} just for you. Here they are:"
         items = all_items.filter(category=detected_cat)
@@ -65,8 +66,8 @@ def ai_recommendations(request):
         reply = "Wise choice! 🥗 Health is wealth. These dishes are prepared with the freshest ingredients and minimal oil to keep you feeling light and energized:"
         items = all_items.filter(Q(description__icontains='healthy') | Q(category__name__icontains='Salad'))
     elif current_intent == 'kids':
-        reply = "Cooking for the little ones? 🧸 I recommend these mild and fun dishes that are always a hit with kids:"
-        items = all_items.filter(price__lt=200)[:4] # Simple logic for kids: affordable/small
+        reply = "Cooking for the little ones? 🧸 I recommend these mild and fun dishes that are always a hit with kids! They're gentle on the spice and full of flavor:"
+        items = all_items.filter(Q(price__lt=200) | Q(name__icontains='sweet') | Q(description__icontains='sweet'))
     else:
         # Complex Search
         query = Q()
@@ -82,8 +83,9 @@ def ai_recommendations(request):
             reply = "I'm not exactly sure about that, but as a Chef, I highly recommend you try our signature specials today! ✨"
             items = all_items.order_by('?')[:3]
 
-    # Limit to 6 items for better chat readability
-    items = items.distinct()[:6]
+    # Process final items list
+    if hasattr(items, 'distinct'):
+        items = items.distinct()[:6]
     
     data = []
     for item in items:
@@ -104,6 +106,3 @@ def ai_recommendations(request):
         'reply': reply,
         'recommendations': data
     })
-
-
-
