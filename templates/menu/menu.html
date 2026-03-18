@@ -67,4 +67,84 @@
 </section>
 {% endfor %}
 
-{% endblock %}
+<!-- AI Assistant FAB -->
+<button class="ai-fab" onclick="toggleAIModal()">✨</button>
+
+<!-- AI Assistant Modal -->
+<div class="ai-modal-overlay" id="ai-modal" onclick="closeAIModalOutside(event)">
+    <div class="ai-modal">
+        <div class="ai-modal-header">
+            <h2>ScanToEat AI</h2>
+            <p>What are you in the mood for?</p>
+        </div>
+        <div class="ai-modal-body">
+            <div class="mood-selector">
+                <button class="mood-btn" onclick="getRecs('spicy')">🌶️ Spicy</button>
+                <button class="mood-btn" onclick="getRecs('healthy')">🥗 Healthy</button>
+                <button class="mood-btn" onclick="getRecs('light')">🍃 Light</button>
+                <button class="mood-btn" onclick="getRecs('filling')">🍚 Filling</button>
+                <button class="mood-btn" onclick="getRecs('sweet')">🍰 Sweet</button>
+                <button class="mood-btn" onclick="getRecs('popular')">🔥 Popular</button>
+            </div>
+
+            <div id="ai-loader" class="ai-loader">🤖 Thinking...</div>
+            <div id="ai-results" class="recommendation-list">
+                <!-- Data will be injected here -->
+            </div>
+        </div>
+        <div class="ai-modal-footer">
+            <button class="ai-close-btn" onclick="toggleAIModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAIModal() {
+    const modal = document.getElementById('ai-modal');
+    modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+}
+
+function closeAIModalOutside(e) {
+    if (e.target.id === 'ai-modal') toggleAIModal();
+}
+
+function getRecs(mood) {
+    // UI update
+    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    
+    const loader = document.getElementById('ai-loader');
+    const results = document.getElementById('ai-results');
+    
+    loader.style.display = 'block';
+    results.innerHTML = '';
+    
+    fetch(`/menu/ai-recommendations/?mood=${mood}`)
+        .then(res => res.json())
+        .then(data => {
+            loader.style.display = 'none';
+            if (data.recommendations && data.recommendations.length > 0) {
+                data.recommendations.forEach(item => {
+                    results.innerHTML += `
+                        <div class="rec-item">
+                            ${item.image ? `<img src="${item.image}" class="rec-img">` : `<div class="rec-img" style="background:#eee"></div>`}
+                            <div class="rec-info">
+                                <div class="rec-name">${item.name}</div>
+                                <div class="rec-price">₹${item.price}</div>
+                            </div>
+                            <button class="rec-add" onclick="addToCart('${item.id}', this)">Add</button>
+                        </div>
+                    `;
+                });
+            } else {
+                results.innerHTML = '<p style="text-align:center;color:#666;font-size:13px;">No specific matches, but you might like our daily specials!</p>';
+            }
+        })
+        .catch(err => {
+            loader.style.display = 'none';
+            results.innerHTML = '<p style="text-align:center;color:red;">AI is resting. Try again!</p>';
+        });
+}
+</script>
+
+{% endblock %}
