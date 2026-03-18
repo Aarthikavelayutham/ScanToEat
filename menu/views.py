@@ -122,9 +122,9 @@ def ai_recommendations(request):
             
             items = all_items.filter(query).distinct()
             if items.exists():
-                reply = "Found exactly what you are looking for! 🍽️"
+                reply = f"Found exactly what you are looking for! 🍽️ (Fallback Mode, Error: {str(e)})"
             else:
-                 reply = "That's an interesting question! While I focus mainly on our amazing recipes, I highly recommend trying our Chef's Specials today:"
+                 reply = f"That's an interesting question! While I focus mainly on our amazing recipes, I highly recommend trying our Chef's Specials today: (Fallback Error: {str(e)})"
                  items = all_items.order_by('?')[:3]
                  
         final_items = items[:6]
