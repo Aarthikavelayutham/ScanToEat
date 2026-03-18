@@ -17,6 +17,10 @@ echo "==> Restoring your 100+ dishes..."
 python manage.py loaddata menu_data.json
 python manage.py loaddata tables_data.json
 
+# Regenerate any broken or missing QR codes automatically
+echo "==> Regenerating table QR codes..."
+python manage.py regenerate_qrs
+
 # Master User Setup (detected from environment or defaults)
 python manage.py shell -c "
 import os
