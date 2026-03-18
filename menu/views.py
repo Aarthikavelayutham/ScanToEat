@@ -31,75 +31,60 @@ def menu_view(request):
 def ai_recommendations(request):
     message = request.GET.get('message', '').lower()
     
-    # NLP improvement: Find specific categories mentioned in text
-    all_categories = Category.objects.filter(is_active=True)
-    detected_category = None
-    for cat in all_categories:
-        if cat.name.lower() in message or cat.slug.lower() in message:
-            detected_category = cat
-            break
-
-    # Simple NLP: Pattern matching for conversational feel
+    # Initialize or get chat history from session
+    history = request.session.get('chat_history', [])
+    history.append({'role': 'user', 'content': message})
+    
+    # Intelligence: Category & Keyword Detection
+    all_cats = Category.objects.filter(is_active=True)
+    all_items = MenuItem.objects.filter(is_available=True)
+    
+    detected_cat = next((c for c in all_cats if c.name.lower() in message or c.slug.lower() in message), None)
+    
     mood_map = {
-        'spicy': ['spicy', 'chili', 'pepper', 'fire', 'hot', 'masala', 'schezwan', 'kick'],
-        'healthy': ['healthy', 'diet', 'fresh', 'steam', 'green', 'boiled', 'leafy', 'salad', 'low calorie'],
-        'light': ['light', 'soup', 'clear', 'simple', 'snack', 'starter', 'bite'],
-        'filling': ['filling', 'hungry', 'meal', 'curry', 'rice', 'biryani', 'bread', 'roti', 'combo', 'main'],
-        'sweet': ['sweet', 'dessert', 'ice cream', 'cake', 'sugar', 'chocolate', 'treat'],
-        'popular': ['popular', 'best', 'signature', 'special', 'classic', 'recommend', 'suggest']
+        'spicy': ['spicy', 'chili', 'hot', 'masala', 'kick', 'fire', 'pepper'],
+        'healthy': ['healthy', 'diet', 'green', 'fresh', 'oil-free', 'boiled', 'protein', 'salad'],
+        'kids': ['kids', 'child', 'sweet', 'soft', 'non-spicy', 'plain', 'mini', 'small'],
+        'chef': ['best', 'signature', 'special', 'must-try', 'chef', 'recommend', 'famous'],
+        'drinks': ['drink', 'cold', 'beverage', 'juice', 'soda', 'refreshing']
     }
     
-    detected_mood = None
-    for mood, keywords in mood_map.items():
-        if any(kw in message for kw in keywords):
-            detected_mood = mood
-            break
-            
-    # Response Templates
-    responses = {
-        'spicy': "I love a good kick! 🌶️ Here are all the spicy dishes on our menu:",
-        'healthy': "Keeping it light and fresh? 🥗 Here's our selection of healthy options:",
-        'light': "Just looking for a quick bite? 🍃 Check these out:",
-        'filling': "Feeling hungry? 🍚 These are our most satisfying and filling dishes:",
-        'sweet': "Time for a treats? 🍰 Here are our sweet delights:",
-        'popular': "Since you're looking for our best, check out these popular favorites:",
-        'default': "I've picked out some of our best dishes that I think you'll enjoy! ✨"
-    }
-
-    # Search Logic
-    query = Q()
-    if detected_mood:
-        keywords = mood_map[detected_mood]
-        for kw in keywords:
-            query |= Q(name__icontains=kw) | Q(description__icontains=kw)
+    current_intent = next((m for m, keywords in mood_map.items() if any(kw in message for kw in keywords)), None)
     
-    if detected_category:
-        query |= Q(category=detected_category)
-    
-    items = MenuItem.objects.filter(is_available=True).filter(query).distinct()
-    
-    if not (detected_mood or detected_category) or not items.exists():
-        # Fallback to featured/random if no match or generic message
-        all_ids = list(MenuItem.objects.filter(is_available=True).values_list('id', flat=True))
-        if all_ids:
-            random_ids = random.sample(all_ids, min(len(all_ids), 3)) # Keep random as small
-            items = MenuItem.objects.filter(id__in=random_ids)
-        else:
-            items = MenuItem.objects.none()
-        response_text = responses['default']
+    # Reasoning logic for "Chat-GPT" feel
+    if 'hi' in message or 'hello' in message or 'chef' in message:
+        reply = "Hello! I'm Chef ScanToEat. 👨‍Chef at your service. I can help you find anything from a light snack to a grand feast! What's your appetite like today?"
+        items = []
+    elif detected_cat:
+        reply = f"Ah, looking for {detected_cat.name}? Great choice! I've curated our entire selection of {detected_cat.name} just for you. Here they are:"
+        items = all_items.filter(category=detected_cat)
+    elif current_intent == 'spicy':
+        reply = "I see you like some heat! 🌶️ I've picked out our boldest, most flavorful spicy dishes that will definitely give you that kick you're looking for:"
+        items = all_items.filter(Q(name__icontains='spicy') | Q(name__icontains='chili') | Q(description__icontains='masala'))
+    elif current_intent == 'healthy':
+        reply = "Wise choice! 🥗 Health is wealth. These dishes are prepared with the freshest ingredients and minimal oil to keep you feeling light and energized:"
+        items = all_items.filter(Q(description__icontains='healthy') | Q(category__name__icontains='Salad'))
+    elif current_intent == 'kids':
+        reply = "Cooking for the little ones? 🧸 I recommend these mild and fun dishes that are always a hit with kids:"
+        items = all_items.filter(price__lt=200)[:4] # Simple logic for kids: affordable/small
     else:
-        # DO NOT limit 3 anymore as per user request
-        if detected_category:
-            response_text = f"Sure! Here are all the dishes from our **{detected_category.name}** category: 🍽️"
+        # Complex Search
+        query = Q()
+        words = message.split()
+        for word in words:
+            if len(word) > 3:
+                query |= Q(name__icontains=word) | Q(description__icontains=word)
+        
+        items = all_items.filter(query)
+        if items.exists():
+            reply = "I've scanned our kitchen for items matching your request! Based on my recipes, these seem like the perfect match:"
         else:
-            response_text = responses.get(detected_mood, responses['default'])
+            reply = "I'm not exactly sure about that, but as a Chef, I highly recommend you try our signature specials today! ✨"
+            items = all_items.order_by('?')[:3]
 
-    # Greeting if message is generic
-    greetings = ['hi', 'hello', 'hey', 'start', 'help', 'who are you']
-    if any(g in message for g in greetings) and not (detected_mood or detected_category):
-        response_text = "Hello! I'm your AI Chef. 👨‍🍳 I can help you find the perfect dish! Try asking for 'spicy food', 'all starters', or something 'healthy'!"
-        items = [] # Just talk
-
+    # Limit to 6 items for better chat readability
+    items = items.distinct()[:6]
+    
     data = []
     for item in items:
         data.append({
@@ -107,12 +92,18 @@ def ai_recommendations(request):
             'name': item.name,
             'price': float(item.price),
             'image': item.image.url if item.image else None,
-            'desc': (item.description[:45] + '...') if item.description and len(item.description) > 45 else item.description
+            'desc': (item.description[:50] + '...') if item.description and len(item.description) > 50 else item.description
         })
-        
+
+    # Save limited history back to session
+    history.append({'role': 'assistant', 'content': reply})
+    request.session['chat_history'] = history[-6:]
+    request.session.modified = True
+
     return JsonResponse({
-        'reply': response_text,
+        'reply': reply,
         'recommendations': data
     })
+
 
 
