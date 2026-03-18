@@ -94,3 +94,19 @@ def waiter_fragment(request):
     return render(request, 'tables/waiter_fragment.html', {
         'table_data': table_data,
     })
+
+
+def printable_bill(request, table_id):
+    table = get_object_or_404(Table, id=table_id)
+    orders = Order.objects.filter(
+        table=table,
+        status__in=['pending', 'preparing', 'ready', 'delivered']
+    ).prefetch_related('items__menu_item')
+    
+    total_amount = sum(o.total_amount for o in orders)
+    
+    return render(request, 'tables/bill_print.html', {
+        'table': table,
+        'orders': orders,
+        'total': total_amount,
+    })

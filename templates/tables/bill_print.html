@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+{% load bill_filters %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bill - Table {{ table.number }}</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; width: 80mm; margin: 0 auto; padding: 10px; color: #000; }
+        .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 15px; }
+        .header h1 { margin: 0; font-size: 20px; }
+        .meta { font-size: 13px; margin-bottom: 15px; }
+        .items { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        .items th { border-bottom: 1px dashed #000; text-align: left; font-size: 13px; }
+        .items td { padding: 5px 0; font-size: 13px; }
+        .total-box { border-top: 1px dashed #000; padding-top: 10px; text-align: right; }
+        .total-amount { font-size: 18px; font-weight: bold; }
+        .footer { text-align: center; margin-top: 30px; font-size: 12px; border-top: 1px dashed #000; padding-top: 10px; }
+        
+        @media print {
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body onload="window.print(); setTimeout(window.close, 500);">
+
+<div class="header">
+    <h1>ScanToEat</h1>
+    <p>Fine Dining Experience</p>
+</div>
+
+<div class="meta">
+    <div><strong>Table:</strong> {{ table.number }}</div>
+    <div><strong>Date:</strong> {% now "Y-m-d H:i" %}</div>
+</div>
+
+<table class="items">
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th style="text-align: center;">Qty</th>
+            <th style="text-align: right;">Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+            {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.menu_item.name }}</td>
+                <td style="text-align: center;">{{ item.quantity }}</td>
+                <td style="text-align: right;">₹{{ item.total_price|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="total-box">
+    <div>Subtotal: ₹{{ total|floatformat:2 }}</div>
+    <div>Tax (GST 5%): ₹{{ total|multiply:0.05|floatformat:2 }}</div>
+    <div class="total-amount">Grand Total: ₹{{ total|add_gst:1.05|floatformat:2 }}</div>
+</div>
+
+<div class="footer">
+    <p>Thank you for dining with us!</p>
+    <p>Visit us again at ScanToEat</p>
+</div>
+
+<div class="no-print" style="margin-top: 20px; text-align: center;">
+    <button onclick="window.print()">Print Again</button>
+</div>
+
+</body>
+</html>
