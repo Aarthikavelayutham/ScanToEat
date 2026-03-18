@@ -67,15 +67,19 @@ def ai_recommendations(request):
     
     items = MenuItem.objects.filter(is_available=True).filter(query)
     
-    if not items.exists():
-        # Fallback to featured/random if no match
-        all_ids = MenuItem.objects.filter(is_available=True).values_list('id', flat=True)
-        random_ids = random.sample(list(all_ids), min(len(all_ids), 3))
-        items = MenuItem.objects.filter(id__in=random_ids)
+    if not detected_mood or not items.exists():
+        # Fallback to featured/random if no match or generic message
+        all_ids = list(MenuItem.objects.filter(is_available=True).values_list('id', flat=True))
+        if all_ids:
+            random_ids = random.sample(all_ids, min(len(all_ids), 3))
+            items = MenuItem.objects.filter(id__in=random_ids)
+        else:
+            items = MenuItem.objects.none()
         response_text = responses['default']
     else:
         items = items[:3]
-        response_text = responses[detected_mood]
+        response_text = responses.get(detected_mood, responses['default'])
+
 
     # Greeting if message is generic
     greetings = ['hi', 'hello', 'hey', 'start', 'help', 'who are you']
