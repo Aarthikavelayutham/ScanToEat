@@ -104,6 +104,24 @@
 
         .download-btn:hover { background: #e55a25; }
 
+        .qr-url {
+            font-size: 10px;
+            color: #ff6b35;
+            word-break: break-all;
+            margin-bottom: 12px;
+            padding: 4px 8px;
+            background: #fff5f2;
+            border-radius: 4px;
+            font-family: monospace;
+            display: block;
+            text-decoration: none;
+        }
+
+        .qr-url:hover {
+            color: #e55a25;
+            background: #ffebe5;
+        }
+
         .no-qr {
             color: #aaa;
             font-size: 13px;
@@ -229,7 +247,7 @@
 
     <div class="qr-grid">
         {% for table in tables %}
-        <div class="qr-card" onclick="openModal('{{ table.number }}', '{{ table.capacity }}', '{% if table.qr_image %}{{ table.qr_image.url }}{% endif %}')">
+        <div class="qr-card" onclick="openModal('{{ table.number }}', '{{ table.capacity }}', '{% if table.qr_image %}{{ table.qr_image.url }}{% endif %}', '{{ table.qr_url }}')">
             {% if table.qr_image %}
                 <img src="{{ table.qr_image.url }}" alt="Table {{ table.number }} QR">
             {% else %}
@@ -239,6 +257,9 @@
             {% endif %}
             <div class="qr-table-number">Table {{ table.number }}</div>
             <div class="qr-capacity">Capacity: {{ table.capacity }} persons</div>
+            <a href="{{ table.qr_url }}" target="_blank" class="qr-url" onclick="event.stopPropagation()">
+                {{ table.qr_url }}
+            </a>
             {% if table.qr_image %}
                 <a href="{{ table.qr_image.url }}" download="table_{{ table.number }}_qr.png"
                    class="download-btn" onclick="event.stopPropagation()">
@@ -256,6 +277,9 @@
         <img id="modal-img" src="" alt="QR Code">
         <div class="modal-title" id="modal-title"></div>
         <div class="modal-subtitle" id="modal-subtitle"></div>
+        <div style="margin-bottom: 16px;">
+            <a id="modal-url" href="#" target="_blank" style="font-size: 11px; color: #ff6b35; word-break: break-all; font-family: monospace;"></a>
+        </div>
         <div class="modal-btns">
             <a id="modal-download" href="#" download class="modal-download">Download</a>
             <button class="modal-close" onclick="closeModal()">Close</button>
@@ -264,11 +288,13 @@
 </div>
 
 <script>
-function openModal(tableNumber, capacity, imgUrl) {
+function openModal(tableNumber, capacity, imgUrl, qrUrl) {
     if (!imgUrl) return;
     document.getElementById('modal-img').src = imgUrl;
     document.getElementById('modal-title').textContent = 'Table ' + tableNumber;
     document.getElementById('modal-subtitle').textContent = 'Capacity: ' + capacity + ' persons';
+    document.getElementById('modal-url').textContent = qrUrl;
+    document.getElementById('modal-url').href = qrUrl;
     document.getElementById('modal-download').href = imgUrl;
     document.getElementById('modal-download').download = 'table_' + tableNumber + '_qr.png';
     document.getElementById('modal').classList.add('active');

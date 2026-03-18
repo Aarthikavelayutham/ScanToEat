@@ -1,7 +1,9 @@
+import os
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Prefetch
+from django.conf import settings
 from .models import Table
 from orders.models import Order
 
@@ -48,6 +50,18 @@ def bill_table(request, table_id):
 
 def qr_codes_page(request):
     tables = Table.objects.filter(is_active=True).order_by('number')
+    
+    # Check if images exist on disk, regenerate if missing
+    for table in tables:
+        if table.qr_image:
+            try:
+                if not os.path.exists(table.qr_image.path):
+                    table.save() # This will trigger our improved save and regenerate
+            except (ValueError, AttributeError):
+                table.save()
+        else:
+            table.save()
+            
     return render(request, 'tables/qr_codes.html', {
         'tables': tables,
     })
