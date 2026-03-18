@@ -122,9 +122,9 @@ def ai_recommendations(request):
             
             items = all_items.filter(query).distinct()
             if items.exists():
-                reply = f"Found exactly what you are looking for! 🍽️"
+                reply = f"Found exactly what you are looking for! 🍽️ (Error was: {str(e)})"
             else:
-                 reply = f"That's an interesting question! While I focus mainly on our amazing recipes, I highly recommend trying our Chef's Specials today:"
+                 reply = f"That's an interesting question! (Error was: {str(e)})"
                  items = all_items.order_by('?')[:3]
                  
         final_items = items[:6]
