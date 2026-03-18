@@ -72,7 +72,7 @@ def ai_recommendations(request):
 
     try:
         # Try to use the Real AI (If API KEY is set)
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         # Structure history for Gemini
         gemini_history = []
         for msg in request.session.get('chat_history', [])[:-1]: # exclude current
@@ -122,9 +122,9 @@ def ai_recommendations(request):
             
             items = all_items.filter(query).distinct()
             if items.exists():
-                reply = f"Found exactly what you are looking for! 🍽️ (Fallback Mode, Error: {str(e)})"
+                reply = f"Found exactly what you are looking for! 🍽️"
             else:
-                 reply = f"That's an interesting question! While I focus mainly on our amazing recipes, I highly recommend trying our Chef's Specials today: (Fallback Error: {str(e)})"
+                 reply = f"That's an interesting question! While I focus mainly on our amazing recipes, I highly recommend trying our Chef's Specials today:"
                  items = all_items.order_by('?')[:3]
                  
         final_items = items[:6]
