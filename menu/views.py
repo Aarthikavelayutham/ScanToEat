@@ -31,6 +31,14 @@ def menu_view(request):
 def ai_recommendations(request):
     message = request.GET.get('message', '').lower()
     
+    # NLP improvement: Find specific categories mentioned in text
+    all_categories = Category.objects.filter(is_active=True)
+    detected_category = None
+    for cat in all_categories:
+        if cat.name.lower() in message or cat.slug.lower() in message:
+            detected_category = cat
+            break
+
     # Simple NLP: Pattern matching for conversational feel
     mood_map = {
         'spicy': ['spicy', 'chili', 'pepper', 'fire', 'hot', 'masala', 'schezwan', 'kick'],
@@ -49,13 +57,13 @@ def ai_recommendations(request):
             
     # Response Templates
     responses = {
-        'spicy': "I love a good kick! 🌶️ Based on what you said, you'll definitely enjoy these spicy favorites:",
-        'healthy': "Keeping it light and fresh? 🥗 Great choice! Here's what I recommend from our healthy selection:",
-        'light': "Just looking for a quick bite? 🍃 These are perfect for starting your meal:",
-        'filling': "Feeling hungry? 🍚 I've picked out our most satisfying and filling dishes for you:",
-        'sweet': "Time for a treats? 🍰 Here are some delicious options to satisfy your sweet tooth:",
-        'popular': "Since you're looking for our best, here are the top-rated dishes our customers love:",
-        'default': "I'm not quite sure, but here are some of our most popular dishes that you might enjoy! ✨"
+        'spicy': "I love a good kick! 🌶️ Here are all the spicy dishes on our menu:",
+        'healthy': "Keeping it light and fresh? 🥗 Here's our selection of healthy options:",
+        'light': "Just looking for a quick bite? 🍃 Check these out:",
+        'filling': "Feeling hungry? 🍚 These are our most satisfying and filling dishes:",
+        'sweet': "Time for a treats? 🍰 Here are our sweet delights:",
+        'popular': "Since you're looking for our best, check out these popular favorites:",
+        'default': "I've picked out some of our best dishes that I think you'll enjoy! ✨"
     }
 
     # Search Logic
@@ -65,27 +73,32 @@ def ai_recommendations(request):
         for kw in keywords:
             query |= Q(name__icontains=kw) | Q(description__icontains=kw)
     
-    items = MenuItem.objects.filter(is_available=True).filter(query)
+    if detected_category:
+        query |= Q(category=detected_category)
     
-    if not detected_mood or not items.exists():
+    items = MenuItem.objects.filter(is_available=True).filter(query).distinct()
+    
+    if not (detected_mood or detected_category) or not items.exists():
         # Fallback to featured/random if no match or generic message
         all_ids = list(MenuItem.objects.filter(is_available=True).values_list('id', flat=True))
         if all_ids:
-            random_ids = random.sample(all_ids, min(len(all_ids), 3))
+            random_ids = random.sample(all_ids, min(len(all_ids), 3)) # Keep random as small
             items = MenuItem.objects.filter(id__in=random_ids)
         else:
             items = MenuItem.objects.none()
         response_text = responses['default']
     else:
-        items = items[:3]
-        response_text = responses.get(detected_mood, responses['default'])
-
+        # DO NOT limit 3 anymore as per user request
+        if detected_category:
+            response_text = f"Sure! Here are all the dishes from our **{detected_category.name}** category: 🍽️"
+        else:
+            response_text = responses.get(detected_mood, responses['default'])
 
     # Greeting if message is generic
     greetings = ['hi', 'hello', 'hey', 'start', 'help', 'who are you']
-    if any(g in message for g in greetings) and not detected_mood:
-        response_text = "Hello! I'm your AI Chef. 👨‍🍳 I can help you find the perfect dish! Are you in the mood for something spicy, healthy, light, or perhaps a full meal?"
-        items = [] # Just talk, don't show dishes yet
+    if any(g in message for g in greetings) and not (detected_mood or detected_category):
+        response_text = "Hello! I'm your AI Chef. 👨‍🍳 I can help you find the perfect dish! Try asking for 'spicy food', 'all starters', or something 'healthy'!"
+        items = [] # Just talk
 
     data = []
     for item in items:
@@ -101,4 +114,5 @@ def ai_recommendations(request):
         'reply': response_text,
         'recommendations': data
     })
+
 
