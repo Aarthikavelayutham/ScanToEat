@@ -20,7 +20,13 @@ PUBLIC_DOMAIN = os.environ.get('RENDER_EXTERNAL_HOSTNAME') or os.environ.get('RA
 SITE_URL = os.environ.get('SITE_URL')
 if not SITE_URL:
     if PUBLIC_DOMAIN:
-        SITE_URL = f'https://{PUBLIC_DOMAIN}'
+        # Check if the domain already includes a TLD, if not and it's on Render, append .onrender.com
+        if '.' not in PUBLIC_DOMAIN and os.environ.get('RENDER_EXTERNAL_HOSTNAME'):
+            SITE_URL = f'https://{PUBLIC_DOMAIN}.onrender.com'
+        elif not PUBLIC_DOMAIN.startswith('http'):
+            SITE_URL = f'https://{PUBLIC_DOMAIN}'
+        else:
+            SITE_URL = PUBLIC_DOMAIN
     elif os.environ.get('RAILWAY_STATIC_URL'):
         SITE_URL = os.environ.get('RAILWAY_STATIC_URL')
     else:
