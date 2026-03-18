@@ -17,7 +17,28 @@
             border-bottom: 2px solid #ff6b35;
         }
 
-        .header h1 { color: #ff6b35; font-size: 22px; }
+        .home-btn {
+            background: rgba(255,255,255,0.1);
+            color: #ff6b35;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,107,53,0.3);
+        }
+
+        .home-btn:hover {
+            background: #ff6b35;
+            color: white;
+            border-color: #ff6b35;
+        }
+
+        .header h1 { color: #ff6b35; font-size: 22px; margin-left: 16px; flex: 1; }
 
         .live-badge {
             background: #2ecc71;
@@ -28,6 +49,7 @@
             font-weight: 700;
             animation: pulse 2s infinite;
         }
+
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
@@ -164,9 +186,11 @@
 <body>
 
 <div class="header">
+    <a href="/" class="home-btn">🏠 Home</a>
     <h1>Kitchen Dashboard</h1>
     <span class="live-badge">LIVE</span>
 </div>
+
 
 <div class="dashboard">
     <div id="new-order-banner" class="new-order-alert">🔔 NEW ORDER RECEIVED!</div>

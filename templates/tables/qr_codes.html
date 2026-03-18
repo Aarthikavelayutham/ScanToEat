@@ -19,14 +19,26 @@
 
         .header h1 { font-size: 22px; }
 
-        .back-link {
+        .home-btn {
+            background: rgba(255,255,255,0.2);
             color: white;
             text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 8px;
             font-size: 14px;
-            opacity: 0.85;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.3);
         }
 
-        .back-link:hover { opacity: 1; }
+        .home-btn:hover {
+            background: white;
+            color: #ff6b35;
+        }
+
 
         .page {
             max-width: 900px;
@@ -235,9 +247,10 @@
 <body>
 
 <div class="header">
+    <a href="/" class="home-btn">🏠 Home</a>
     <h1>Table QR Codes</h1>
-    <a href="/" class="back-link">← Back to Home</a>
 </div>
+
 
 <div class="page">
     <p class="page-title">ScantoEat</p>

@@ -13,11 +13,32 @@
             color: white;
             padding: 16px 24px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
         }
 
-        .header h1 { font-size: 22px; }
+        .home-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.3);
+            margin-right: 16px;
+        }
+
+        .home-btn:hover {
+            background: white;
+            color: #ff6b35;
+        }
+
+        .header h1 { font-size: 22px; flex: 1; }
+
 
         .nav-links a {
             color: white;
@@ -167,7 +188,9 @@
 <body>
 
 <div class="header">
+    <a href="/" class="home-btn">🏠 Home</a>
     <h1>Analytics</h1>
+
     <div class="nav-links">
         <a href="/kitchen/">Kitchen</a>
         <a href="/admin/">Admin</a>
