@@ -31,78 +31,80 @@ def menu_view(request):
 def ai_recommendations(request):
     message = request.GET.get('message', '').lower()
     
-    # Initialize or get chat history from session
+    # Session-based history
     history = request.session.get('chat_history', [])
     history.append({'role': 'user', 'content': message})
     
-    # Intelligence: Category & Keyword Detection
-    all_cats = Category.objects.filter(is_active=True)
     all_items = MenuItem.objects.filter(is_available=True)
+    all_cats = Category.objects.filter(is_active=True)
     
-    detected_cat = next((c for c in all_cats if c.name.lower() in message or c.slug.lower() in message), None)
-    
-    mood_map = {
-        'spicy': ['spicy', 'chili', 'hot', 'masala', 'kick', 'fire', 'pepper'],
-        'healthy': ['healthy', 'diet', 'green', 'fresh', 'oil-free', 'boiled', 'protein', 'salad'],
-        'kids': ['kids', 'child', 'sweet', 'soft', 'non-spicy', 'plain', 'mini', 'small', 'gentle'],
-        'chef': ['best', 'signature', 'special', 'must-try', 'chef', 'recommend', 'famous'],
-        'drinks': ['drink', 'cold', 'beverage', 'juice', 'soda', 'refreshing']
+    # 1. Advanced Intent Recognition
+    patterns = {
+        'vegan': ['vegan', 'no dairy', 'no meat', 'plant based', 'pure veg'],
+        'gluten': ['gluten-free', 'no wheat', 'celiac', 'flourless'],
+        'time': ['time', 'open', 'close', 'hours', 'working', 'schedule'],
+        'loc': ['location', 'where', 'place', 'address', 'directions'],
+        'pay': ['pay', 'bill', 'payment', 'cash', 'card', 'upi', 'checkout'],
+        'order': ['how to order', 'place order', 'add to cart', 'ordering process'],
+        'chef_special': ['signature', 'best', 'famous', 'most popular', 'must try']
     }
+
+    intent = next((k for k, v in patterns.items() if any(word in message for word in v)), None)
     
-    current_intent = next((m for m, keywords in mood_map.items() if any(kw in message for kw in keywords)), None)
-    
-    # Response logic
-    items = MenuItem.objects.none() # Default to empty queryset
-    
-    if 'hi' in message or 'hello' in message or 'chef' in message:
-        reply = "Hello! I'm Chef ScanToEat. 👨‍🍳 Chef at your service. I can help you find anything from a light snack to a grand feast! What's your appetite like today?"
-    elif detected_cat:
-        reply = f"Ah, looking for {detected_cat.name}? Great choice! I've curated our entire selection of {detected_cat.name} just for you. Here they are:"
-        items = all_items.filter(category=detected_cat)
-    elif current_intent == 'spicy':
-        reply = "I see you like some heat! 🌶️ I've picked out our boldest, most flavorful spicy dishes that will definitely give you that kick you're looking for:"
-        items = all_items.filter(Q(name__icontains='spicy') | Q(name__icontains='chili') | Q(description__icontains='masala'))
-    elif current_intent == 'healthy':
-        reply = "Wise choice! 🥗 Health is wealth. These dishes are prepared with the freshest ingredients and minimal oil to keep you feeling light and energized:"
-        items = all_items.filter(Q(description__icontains='healthy') | Q(category__name__icontains='Salad'))
-    elif current_intent == 'kids':
-        reply = "Cooking for the little ones? 🧸 I recommend these mild and fun dishes that are always a hit with kids! They're gentle on the spice and full of flavor:"
-        items = all_items.filter(Q(price__lt=200) | Q(name__icontains='sweet') | Q(description__icontains='sweet'))
+    items = MenuItem.objects.none()
+    reply = ""
+
+    # 2. Conversational Logic for "Any Question"
+    if intent == 'time':
+        reply = "We are open from 11:00 AM to 11:00 PM every day! 🕚 You can visit us anytime for a great meal."
+    elif intent == 'loc':
+        reply = "ScanToEat is located in the heart of the city! 📍 You can find our exact Google Maps location at the bottom of our homepage."
+    elif intent == 'pay':
+        reply = "We accept all major UPI apps, Cards, and Cash. 💳 Once you're done eating, just click the 'Generate Bill' button in your cart or ask the waiter!"
+    elif intent == 'order':
+        reply = "It's easy! 🛍️ Just click the 'Add' button on any dish you like. When you're ready, go to the 'Cart' and click 'Place Order'. Simple and fast!"
+    elif intent == 'vegan':
+        reply = "We have some delicious plant-based options! 🌿 I've selected our best vegan-friendly dishes for you:"
+        items = all_items.filter(Q(description__icontains='vegan') | Q(description__icontains='fresh') | Q(name__icontains='salad'))
+    elif intent == 'gluten':
+        reply = "Looking for gluten-free? 🌾 While our kitchen handles flour, these dishes are made without gluten-based ingredients:"
+        items = all_items.filter(Q(description__icontains='gluten-free') | Q(name__icontains='rice') | Q(name__icontains='soup'))
+    elif intent == 'chef_special':
+        reply = "As the Chef, these are my personal pride! 👨‍🍳 Don't leave without trying these signature specials:"
+        items = all_items.order_by('?')[:3]
     else:
-        # Complex Search
+        # 3. Dynamic search across entire menu
         query = Q()
         words = message.split()
         for word in words:
-            if len(word) > 3:
-                query |= Q(name__icontains=word) | Q(description__icontains=word)
+            if len(word) > 2:
+                query |= Q(name__icontains=word) | Q(description__icontains=word) | Q(category__name__icontains=word)
         
-        items = all_items.filter(query)
+        items = all_items.filter(query).distinct()
+        
         if items.exists():
-            reply = "I've scanned our kitchen for items matching your request! Based on my recipes, these seem like the perfect match:"
+            reply = "I found exactly what you're looking for our menu! 🍽️ Here's the best of what we have:"
+        elif len(message) < 10:
+             reply = "Hello! I'm your AI Chef. 👨‍🍳 I can recommend food, answer questions about our restaurant, or help you find specific ingredients. What's on your mind?"
         else:
-            reply = "I'm not exactly sure about that, but as a Chef, I highly recommend you try our signature specials today! ✨"
-            items = all_items.order_by('?')[:3]
+             reply = "That's an interesting question! 👨‍🍳 While I focus on our menu and kitchen, I recommend trying these best-sellers while you wait for your answer:"
+             items = all_items.order_by('?')[:3]
 
-    # Process final items list
-    if hasattr(items, 'distinct'):
-        items = items.distinct()[:6]
-    
+    # Process and Send
+    final_items = items[:6]
     data = []
-    for item in items:
+    for item in final_items:
         data.append({
             'id': str(item.id),
             'name': item.name,
             'price': float(item.price),
             'image': item.image.url if item.image else None,
-            'desc': (item.description[:50] + '...') if item.description and len(item.description) > 50 else item.description
+            'desc': (item.description[:55] + '...') if item.description and len(item.description) > 55 else item.description
         })
 
-    # Save limited history back to session
+    # Memory update
     history.append({'role': 'assistant', 'content': reply})
     request.session['chat_history'] = history[-6:]
     request.session.modified = True
 
-    return JsonResponse({
-        'reply': reply,
-        'recommendations': data
-    })
+    return JsonResponse({'reply': reply, 'recommendations': data})
