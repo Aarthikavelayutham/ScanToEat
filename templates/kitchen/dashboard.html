@@ -137,6 +137,28 @@
             color: #555;
             font-size: 18px;
         }
+
+        /* Notification Alert */
+        .new-order-alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff6b35;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(255,107,53,0.4);
+            z-index: 2000;
+            display: none;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from { top: -60px; opacity: 0; }
+            to { top: 20px; opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -147,10 +169,16 @@
 </div>
 
 <div class="dashboard">
+    <div id="new-order-banner" class="new-order-alert">🔔 NEW ORDER RECEIVED!</div>
     <div id="orders-container">
         {% include 'kitchen/orders_fragment.html' %}
     </div>
 </div>
+
+<!-- Sound notification -->
+<audio id="notification-sound" preload="auto">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+</audio>
 
 {% load static %}
 <script src="{% static 'js/utils.js' %}"></script>
@@ -178,10 +206,25 @@ function updateStatus(orderId, status) {
     });
 }
 
+// Auto refresh every 5 seconds
+let lastOrderCount = {{ orders|length|default:0 }};
+
 function refreshOrders() {
     fetch('/kitchen/fragment/')
         .then(res => res.text())
         .then(html => {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            // Count current 'pending' orders in the new HTML
+            const currentPendingCount = tempDiv.querySelectorAll('.order-card.pending').length;
+            
+            // If more pending orders than before, notify!
+            if (currentPendingCount > lastOrderCount) {
+                notifyNewOrder();
+            }
+            
+            lastOrderCount = currentPendingCount;
             document.getElementById('orders-container').innerHTML = html;
         })
         .catch(err => {
@@ -189,8 +232,31 @@ function refreshOrders() {
         });
 }
 
-// Auto refresh every 5 seconds
+function notifyNewOrder() {
+    const sound = document.getElementById('notification-sound');
+    const banner = document.getElementById('new-order-banner');
+    
+    // Play sound
+    if (sound) {
+        sound.currentTime = 0;
+        sound.play().catch(e => console.log("Sound play blocked by browser. Kitchen needs to click once on page to enable."));
+    }
+    
+    // Show banner
+    if (banner) {
+        banner.style.display = 'block';
+        setTimeout(() => {
+            banner.style.display = 'none';
+        }, 3000);
+    }
+}
+
 setInterval(refreshOrders, 5000);
+
+// User interaction required for sound in most browsers
+document.body.addEventListener('click', function() {
+    console.log("Audio context enabled");
+}, { once: true });
 </script>
 
 </body>
